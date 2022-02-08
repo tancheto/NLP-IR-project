@@ -31,12 +31,12 @@ mapping = {'us': {'❤': '0', '😍': '1', '😂': '2', '💕': '3', '🔥': '4'
 
 
 def data_processing(lang):
-    labels = open(labels_file_path.format(lang), 'w')
-    texts = open(texts_file_path.format(lang), 'w')
+    labels = open(labels_file_path.format(lang), 'w', encoding="utf8")
+    texts = open(texts_file_path.format(lang), 'w', encoding="utf8")
 
     number = 10
 
-    with open(origin_file_path.format(lang)) as origin_file:
+    with open(origin_file_path.format(lang), encoding="utf8") as origin_file:
         for line in origin_file:
             number -= 1
             if number <= 0:

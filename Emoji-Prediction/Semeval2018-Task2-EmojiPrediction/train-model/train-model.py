@@ -7,7 +7,7 @@ if __name__ == '__main__':
     if len(args) == 1:
         lang = args[0]
         # Step 1: transform raw data in proper format filter it to be different from test and trial
-        # raw_data_processing(lang)
+        raw_data_processing(lang)
         # Step 2:
         data_processing(lang)
 

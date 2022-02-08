@@ -34,9 +34,9 @@ def clean_text(text):
 
 
 def raw_data_processing(lang):
-    test = open(test_file_path.format(lang))
-    trial = open(trial_file_path.format(lang))
-    out_origin = open(train_file_path.format(lang), 'w')
+    test = open(test_file_path.format(lang), encoding="utf8")
+    trial = open(trial_file_path.format(lang), encoding="utf8")
+    out_origin = open(train_file_path.format(lang), 'w', encoding="utf8")
 
     test_trial = set()
 
@@ -51,7 +51,7 @@ def raw_data_processing(lang):
     unique = 0
     removed = 0
 
-    with open(raw_data.format(lang)) as file:
+    with open(raw_data.format(lang), encoding="utf8") as file:
         for line in file:
             json_line = json.loads(line)
             tweet_id = json_line['id']
