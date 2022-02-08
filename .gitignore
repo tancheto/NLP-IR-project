@@ -1,0 +1,12 @@
+# Labs
+labs 
+
+# Data
+*data
+*backup
+*crawler
+
+# Python environment
+information-retrieval
+*.ipynb_checkpoints
+*__pycache__
