@@ -12,8 +12,11 @@ import unicode_codes
 _EMOJI_REGEXP = None
 _DEFAULT_DELIMITER = "_"
 
-def emojize(text, use_aliases=False, delimiters=(_DEFAULT_DELIMITER,_DEFAULT_DELIMITER)):
+mapping = {'us': {'❤': '0', '😍': '1', '😂': '2', '💕': '3', '🔥': '4', '😊': '5', '😎': '6', '✨': '7', '💙': '8', '😘': '9', '📷': '10', '🇺🇸': '11', '☀': '12', '💜': '13', '😉': '14', '💯': '15', '😁': '16', '🎄': '17', '📸': '18', '😜': '19'},
+           'es': {'❤': '0', '😍': '1', '😂': '2', '💕': '3', '😊': '4', '😘': '5', '💪': '6', '😉': '7', '👌': '8', '🇪🇸': '9', '😎': '10', '💙': '11', '💜': '12', '😜': '13', '💞': '14', '✨': '15', '🎶': '16', '💘': '17', '😁': '18', '	': '19'}}
 
+
+def emojize(text, use_aliases=False, delimiters=(_DEFAULT_DELIMITER, _DEFAULT_DELIMITER)):
     """Replace emoji names in a text with unicode codes.
 
     :param text: string contains emoji names.
@@ -26,11 +29,12 @@ def emojize(text, use_aliases=False, delimiters=(_DEFAULT_DELIMITER,_DEFAULT_DEL
         >>> print(emoji.emojize("Python is fun ~~thumbs_up~~", delimiters = ("~~", "~~")))
         Python is fun 👍
     """
- 
+
     pattern = re.compile(u'(%s[a-zA-Z0-9\+\-_&.ô’Åéãíç()!#*]+%s)' % delimiters)
 
     def replace(match):
-        mg = match.group(1).replace(delimiters[0], _DEFAULT_DELIMITER).replace(delimiters[1], _DEFAULT_DELIMITER)
+        mg = match.group(1).replace(delimiters[0], _DEFAULT_DELIMITER).replace(
+            delimiters[1], _DEFAULT_DELIMITER)
         if use_aliases:
             return unicode_codes.EMOJI_ALIAS_UNICODE.get(mg, mg)
         else:
@@ -39,8 +43,7 @@ def emojize(text, use_aliases=False, delimiters=(_DEFAULT_DELIMITER,_DEFAULT_DEL
     return pattern.sub(replace, text)
 
 
-def demojize(text, delimiters=(_DEFAULT_DELIMITER,_DEFAULT_DELIMITER)):
-
+def demojize(text, delimiters=(_DEFAULT_DELIMITER, _DEFAULT_DELIMITER)):
     """Replace unicode emoji in a text with emoji shortcodes. Useful for storage.
 
     :param text: String contains unicode characters. MUST BE UNICODE.
@@ -55,15 +58,14 @@ def demojize(text, delimiters=(_DEFAULT_DELIMITER,_DEFAULT_DELIMITER)):
 
     def replace(match):
         val = unicode_codes.UNICODE_EMOJI.get(match.group(0), match.group(0))
-        #val[1:-1] we remove the colon before and after in the name and add the delimiters
-        #the colons are present in the name in order to use the emojize funcion (see above)
-        return delimiters[0] +  val[1:-1]  + delimiters[1] 
+        # val[1:-1] we remove the colon before and after in the name and add the delimiters
+        # the colons are present in the name in order to use the emojize funcion (see above)
+        return delimiters[0] + val[1:-1] + delimiters[1]
 
     return get_emoji_regexp().sub(replace, text)
 
 
 def get_emoji_regexp():
-
     """Returns compiled regular expression that matches emojis defined in
     ``emoji.UNICODE_EMOJI_ALIAS``. The regular expression is only compiled once.
     """
@@ -87,12 +89,13 @@ def emoji_list(text):
 
     """
     _entities = []
+
     def replace(match):
         l = match.span()
         c = match.group(0)
         n = unicode_codes.UNICODE_EMOJI.get(c, None)
         if n:
-            _entities.append({"location": l, "code": c, "name":n})
+            _entities.append({"location": l, "code": c, "name": n})
         return c
 
     get_emoji_regexp().sub(replace, text)
@@ -109,7 +112,8 @@ def replace_emoji(text, replacement=''):
     >>>Hi, I am fine. ***
     """
     with_variation_selector = get_emoji_regexp().sub(replacement, text)
-    without_variation_selector = with_variation_selector.replace("\N{VARIATION SELECTOR-15}", "").replace("\N{VARIATION SELECTOR-16}", "")
+    without_variation_selector = with_variation_selector.replace(
+        "\N{VARIATION SELECTOR-15}", "").replace("\N{VARIATION SELECTOR-16}", "")
     return without_variation_selector
 
 
@@ -126,25 +130,31 @@ def set_unicode():
     """
     return set(unicode_codes.UNICODE_EMOJI.keys())
 
+
 def print_html(text, html_file="emoji.html"):
     """
     append string to emoji.html file (with emojis replaced by images so can be visualized)
     emoji.html will be created if it does not exist
     """
-    with open(html_file,"a") as out_html:
+    with open(html_file, "a") as out_html:
         left = "<img src=\"https://raw.githubusercontent.com/fvancesco/emoji/master/utils/images_cldr/"
         right = ".png\" height=\"16\" width=\"16\">"
-        replaced_text = demojize(text, delimiters=(left, right)) 
+        replaced_text = demojize(text, delimiters=(left, right))
         out_html.write("<p>"+replaced_text+"</p>\n")
 
 
-skin_list = ['🏻','🏼','🏽','🏾','🏿']
+skin_list = ['🏻', '🏼', '🏽', '🏾', '🏿']
+
+
 def remove_skin(text):
     rx = '[' + re.escape(''.join(skin_list)) + ']'
     tx = re.sub(rx, '', text)
     return tx
 
+
 sex_list = ['♂', '♀']
+
+
 def remove_sex(text):
     rx = '[' + re.escape(''.join(sex_list)) + ']'
     tx = re.sub(rx, '', text)
