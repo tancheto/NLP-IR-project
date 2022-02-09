@@ -8,6 +8,7 @@ import re
 import json
 import emojilib
 
+# paths
 test_file_path = '../data/test/{}_test.text'
 trial_file_path = '../data/trial/{}_trial.text'
 raw_file_path = '../data/x-train/raw/{}_raw_data.txt'
@@ -29,18 +30,20 @@ def clean_text(text):
             pass
         else:
             clean += word + " "
-    # remove double spaces
     return clean.strip()
 
 
 def raw_data_processing(lang):
+    # open files to read
     test = open(test_file_path.format(lang), 'r', encoding="utf8")
     trial = open(trial_file_path.format(lang), 'r', encoding="utf8")
-    out_origin = open(origin_file_path.format(lang), 'w', encoding="utf8")
 
+    # open files to write
+    out_origin = open(origin_file_path.format(lang), 'w', encoding="utf8")
     labels = open(labels_file_path.format(lang), 'w', encoding="utf8")
     texts = open(texts_file_path.format(lang), 'w', encoding="utf8")
 
+    # union of trial and test data
     test_trial = set()
 
     for line_test in test:
@@ -54,20 +57,26 @@ def raw_data_processing(lang):
     unique = 0
     removed = 0
 
+    # open raw data file
     with open(raw_file_path.format(lang), 'r', encoding="utf8") as file:
         for line in file:
+            # extract tweet 'id' and 'text' from json line
             json_line = json.loads(line)
-
             tweet_id = json_line['id']
             text = json_line['text']
+
+            # remove unnecessary white spaces
             text = re.sub('\n|\r|\r\n|\n\r', ' ', text)
             text = re.sub('\s+', ' ', text).strip()
 
+            # extract emojies from text
             emo_list = emojilib.emoji_list(text)
             emo_set = set([d['code'] for d in emo_list if 'code' in d])
 
+            # only tweets with emojies from given set
             if len(emo_set) > 0 and all(emo in emojilib.mapping[lang] for emo in emo_set):
                 clean = clean_text(text)
+                # check if the tweet is in test or trial
                 if clean in test_trial:
                     removed += 1
                 else:
@@ -87,6 +96,7 @@ def raw_data_processing(lang):
 
     print(f"Total: {total}, Good: {good}, Unique: {unique}, Removed: {removed}")
 
+    # close files
     test.close()
     trial.close()
     out_origin.close()
