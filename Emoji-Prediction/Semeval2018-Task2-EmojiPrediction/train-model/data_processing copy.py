@@ -7,7 +7,8 @@ import re
 import string
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-from nltk.stem.snowball import SnowballStemmer
+from nltk.stem import WordNetLemmatizer, SnowballStemmer
+from gensim.parsing.preprocessing import STOPWORDS
 from wordsegment import load, segment
 
 texts_file_path = '../data/x-train/train/{}_train.text'
@@ -15,18 +16,19 @@ keywords_file_path = '../data/x-train/{}_train.keywords'
 train_file_path = '../data/x-train/{}_train.txt'
 
 not_ness_punctuation = re.sub('\?|\!|\.', '', string.punctuation) + '…' + '・'
-stop_words = {'us': set(stopwords.words('english')),
+stop_words = {'us': set(stopwords.words('english')).union(STOPWORDS),
               'es': set(stopwords.words('spanish'))}
 
 
-def clean_tokenize_stem(lang, text):
-    text = text.translate(str.maketrans('', '', not_ness_punctuation)).lower()
-
-    language = "spanish" if lang == "es" else 'english'
+def lemmatize_stemming(text, language):
     stemmer = SnowballStemmer(language, ignore_stopwords=True)
-    words = word_tokenize(text, language)
+    return stemmer.stem(WordNetLemmatizer().lemmatize(text, pos='v'))
 
-    return ' '.join([stemmer.stem(word) for word in words])
+
+def ala_bala(lang, text):
+    language = "spanish" if lang == "es" else 'english'
+    text = text.translate(str.maketrans('', '', not_ness_punctuation)).lower()
+    return ' '.join([lemmatize_stemming(word, language) for word in word_tokenize(text, language) if word not in stop_words[lang] and len(word) > 3])
 
 
 def clean_text_vol2(lang, text, mentions=False):
@@ -35,16 +37,14 @@ def clean_text_vol2(lang, text, mentions=False):
     for word in text.split(" "):
         if not mentions and word == '@':
             break
-        elif (word in stop_words[lang]
-              or word.startswith('@')
-              or word == '#'):
+        elif word.startswith('@') or word == '#':
             pass
         elif word.startswith('#'):
             keywords = keywords.union(segment(word.removeprefix('#')))
         else:
             clean += word + " "
 
-    return [clean_tokenize_stem(lang, clean.strip()), ' '.join(keywords)]
+    return [ala_bala(lang, clean.strip()), ' '.join(keywords)]
 
 
 def data_processing(lang):
