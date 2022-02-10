@@ -17,7 +17,7 @@ keywords_file_path = '../data/x-train/{}_train.keywords'
 train_file_path = '../data/x-train/{}_train.txt'
 
 # important variables
-unnecess_punctuation = re.sub('\?|\!|\.', '', string.punctuation) + '…' + '・'
+unnecess_punctuation = string.punctuation + '…' + '・' + '•'
 stop_words = {'us': set(stopwords.words('english')).union(STOPWORDS),
               'es': set(stopwords.words('spanish'))}
 
