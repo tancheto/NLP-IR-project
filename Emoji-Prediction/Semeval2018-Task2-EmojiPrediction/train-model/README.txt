@@ -7,7 +7,7 @@ Quick start:
 
 3) 
 
-python3.10 train-model.py us
+python3.10 -B train-model.py us
 
 After the execution, you will find three files in the same folder of the twitter json:
 - .text file with one text per line

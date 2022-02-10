@@ -6,7 +6,7 @@ Return one file with list of pairs - tweet id and origin tweet, that are not in 
 
 import re
 import json
-import emojilib
+import libs.emoji.emojilib as emojilib
 
 # paths
 test_file_path = '../data/test/{}_test.text'

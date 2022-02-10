@@ -1,6 +1,7 @@
 import sys
 from raw_data_processing import raw_data_processing
-from data_processing import data_processing
+from data_preprocessing import data_preprocessing
+from feature_engineering import feature_engineering
 
 if __name__ == '__main__':
     args = sys.argv[1:]
@@ -15,4 +16,6 @@ if __name__ == '__main__':
         if step == '1' or step == 'all':  # Step 1: transform raw data in proper format filter it to be different from test and trial
             raw_data_processing(lang)
         if step == '2' or step == 'all':  # Step 2: ...
-            data_processing(lang)
+            data_preprocessing(lang)
+        if step == '3' or step == 'all':  # Step 3: ...
+            feature_engineering(lang)
