@@ -76,3 +76,5 @@ def data_preprocessing(lang):
     # close files
     train.close()
     keywords.close()
+
+    print("Step 2: 💯%")

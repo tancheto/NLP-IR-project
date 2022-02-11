@@ -94,11 +94,12 @@ def raw_data_processing(lang):
             if total == 11111:
                 break
 
-    print(f"Total: {total}, Good: {good}, Unique: {unique}, Removed: {removed}")
-
     # close files
     test.close()
     trial.close()
     out_origin.close()
     labels.close()
     texts.close()
+
+    print(
+        f"Step 1: 💯% -> Total: {total}, Good: {good}, Unique: {unique}, Removed: {removed}")

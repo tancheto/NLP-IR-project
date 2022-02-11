@@ -1,7 +1,7 @@
 import sys
 from raw_data_processing import raw_data_processing
 from data_preprocessing import data_preprocessing
-from feature_engineering import feature_engineering
+from feature_engineering import all
 
 if __name__ == '__main__':
     args = sys.argv[1:]
@@ -18,4 +18,4 @@ if __name__ == '__main__':
         if step == '2' or step == 'all':  # Step 2: ...
             data_preprocessing(lang)
         if step == '3' or step == 'all':  # Step 3: ...
-            feature_engineering(lang)
+            all(lang)
