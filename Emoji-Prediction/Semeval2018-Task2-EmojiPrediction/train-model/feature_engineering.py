@@ -20,9 +20,6 @@ bag_of_words_file_path = '../data/x-train/processed/{}_bag_of_words.txt'
 inverted_index_file_path = '../data/x-train/processed/{}_inverted_index.txt'
 tfidf_file_path = '../data/x-train/processed/{}_tfidf.txt'
 
-mask_file_path = '../data/x-train/processed/{}_mask.txt'
-
-
 # important variables
 most_important_ngrams = 1000
 
@@ -159,6 +156,11 @@ def Dict_BoW_IIDX(lang, processed_doc):
     for row in tf_idf(BoW):
         tfidf.write(' '.join([f"{word[0]}-{word[1]}" for word in row]) + '\n')
 
+    dict.close()
+    bag.close()
+    inv_idx.close()
+    tfidf.close()
+
 
 def feature_engineering(lang, processed_doc):
     # find ngrams of one, two and three words
@@ -174,11 +176,22 @@ def feature_engineering(lang, processed_doc):
     for idx in all_mappings:
         row_ngrams.write('|'.join(all_mappings[idx]) + '\n')
 
-    print("binary mask ...")
-    mask_file = open(mask_file_path.format(lang), 'w', encoding="utf8")
-    data_rows_binary = get_binary_representation(features, all_mappings)
-    for row in data_rows_binary:
-        mask_file.write(' '.join(row) + '\n')
+    feats.close()
+    row_ngrams.close()
+
+
+def write_mask_in_file(mask, path):
+    with open(path, 'w', encoding="utf8") as mask_file:
+        for row in mask:
+            mask_file.write(' '.join([str(item) for item in row]) + '\n')
+
+
+def read_mask_from_file(path):
+    mask = []
+    with open(path, 'r', encoding="utf8") as mask_file:
+        for row in mask:
+            mask.append(re.sub('\n', '', row).split(' '))
+    return mask
 
 
 def all(lang):
