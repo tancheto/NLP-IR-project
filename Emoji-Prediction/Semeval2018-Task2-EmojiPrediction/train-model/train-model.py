@@ -2,6 +2,7 @@ import sys
 from raw_data_processing import raw_data_processing
 from data_preprocessing import data_preprocessing
 from feature_engineering import all
+from classifier import classification
 
 if __name__ == '__main__':
     args = sys.argv[1:]
@@ -19,3 +20,5 @@ if __name__ == '__main__':
             data_preprocessing(lang)
         if step == '3' or step == 'all':  # Step 3: ...
             all(lang)
+        if step == '4' or step == 'all':  # Step 4: ...
+            classification(lang)

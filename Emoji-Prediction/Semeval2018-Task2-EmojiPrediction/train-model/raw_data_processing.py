@@ -15,7 +15,7 @@ raw_file_path = '../data/x-train/raw/{}_raw_data.txt'
 origin_file_path = '../data/x-train/raw/{}_train.origin'
 
 texts_file_path = '../data/x-train/train/{}_train.text'
-labels_file_path = '../data/x-train/train/{}_train.lables'
+labels_file_path = '../data/x-train/train/{}_train.labels'
 
 
 def clean_text(text):
@@ -81,7 +81,8 @@ def raw_data_processing(lang):
                     removed += 1
                 else:
                     out_origin.write(str(tweet_id) + '\t' + text + '\n')
-                    labels.write(' '.join(emo_set) + '\n')
+                    labels.write(
+                        ' '.join(list(map(lambda emo: emojilib.mapping[lang][emo], emo_set))) + '\n')
                     texts.write(clean + '\n')
                     unique += 1
                 good += 1

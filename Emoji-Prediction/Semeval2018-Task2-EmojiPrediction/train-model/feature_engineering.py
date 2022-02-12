@@ -42,9 +42,10 @@ def get_dictionary(processed_doc, keep_n):
     dictionary = {}
     if keep_n == 0:
         dictionary = Dictionary(processed_doc)
+        dictionary.filter_extremes(no_below=3, keep_n=None)
     else:
         dictionary = Dictionary(processed_doc, keep_n)
-        dictionary.filter_extremes(keep_n=keep_n)
+        dictionary.filter_extremes(no_below=3, keep_n=keep_n)
 
     # document in Bag of Words(BoW) preview (using dictionary)
     BoW_doc = [dictionary.doc2bow(row, False) for row in processed_doc]
@@ -105,12 +106,12 @@ def get_binary_representation(features, mappings):
     return binary_representation
 
 
-def tf_idf(lang, bag_of_words):
-    file = open(tfidf_file_path.format(lang), 'w', encoding="utf8")
-
+def tf_idf(bag_of_words):
+    tfidf_model = []
     tfidf = TfidfModel(bag_of_words)
     for row in tfidf[bag_of_words]:
-        file.write(' '.join([f"{word[0]}-{word[1]}" for word in row]) + '\n')
+        tfidf_model.append(row)
+    return tfidf_model
 
 
 def inverted_index(dictionary, processed_doc):
@@ -124,7 +125,8 @@ def inverted_index(dictionary, processed_doc):
     # create the inverted index
     for idx, row in enumerate(processed_doc):
         for word in row:
-            inverted_idx[word].append(str(idx + 1))
+            if word in dictionary.values():
+                inverted_idx[word].append(str(idx + 1))
     return inverted_idx
 
 
@@ -132,41 +134,45 @@ def Dict_BoW_IIDX(lang, processed_doc):
     # create dictionary, bag of words and inverted index from processed document
     dictionary, BoW = get_dictionary(processed_doc, 0)
 
+    print("dictionary ...")
     dict = open(dictionary_file_path.format(lang), 'w', encoding="utf8")
     for key, value in dictionary.iteritems():
         dict.write(f"{key}:{value}\n")
 
+    print("bag of words ...")
     bag = open(bag_of_words_file_path.format(lang), 'w', encoding="utf8")
     for row in BoW:
         bag.write(' '.join([f"{tuple[0]}-{tuple[1]}" for tuple in row]) + '\n')
 
+    print("inverted index ...")
     inv_idx = open(inverted_index_file_path.format(lang), 'w', encoding="utf8")
     indexes = inverted_index(dictionary, processed_doc)
     for word in indexes:
         inv_idx.write(f"{word}:{' '.join(indexes[word])}\n")
 
-    tf_idf(lang, BoW)
+    print("tf-idf ...")
+    tfidf = open(tfidf_file_path.format(lang), 'w', encoding="utf8")
+    for row in tf_idf(BoW):
+        tfidf.write(' '.join([f"{word[0]}-{word[1]}" for word in row]) + '\n')
 
 
 def feature_engineering(lang, processed_doc):
     # find ngrams of one, two and three words
     features, all_mappings = get_features(processed_doc, [1, 2, 3])
 
+    print("features ...")
     feats = open(features_file_path.format(lang), 'w', encoding="utf8")
     for feature in features:
         feats.write(feature + '\n')
 
+    print("row ngrams ...")
     row_ngrams = open(row_ngrams_file_path.format(lang), 'w', encoding="utf8")
     for idx in all_mappings:
         row_ngrams.write('|'.join(all_mappings[idx]) + '\n')
 
     # get mask
     data_rows_binary = get_binary_representation(features, all_mappings)
-
     return data_rows_binary
-
-    # DO NOT PRINT
-    # print(data_rows_binary)
 
 
 def all(lang):
