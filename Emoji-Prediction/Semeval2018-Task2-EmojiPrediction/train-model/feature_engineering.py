@@ -20,6 +20,8 @@ bag_of_words_file_path = '../data/x-train/processed/{}_bag_of_words.txt'
 inverted_index_file_path = '../data/x-train/processed/{}_inverted_index.txt'
 tfidf_file_path = '../data/x-train/processed/{}_tfidf.txt'
 
+mask_file_path = '../data/x-train/processed/{}_mask.txt'
+
 
 # important variables
 most_important_ngrams = 1000
@@ -122,10 +124,12 @@ def inverted_index(dictionary, processed_doc):
     for key, value in dictionary.iteritems():
         inverted_idx[value] = []
 
+    dictionary_set = set(dictionary.values())
+
     # create the inverted index
     for idx, row in enumerate(processed_doc):
         for word in row:
-            if word in dictionary.values():
+            if word in dictionary_set:
                 inverted_idx[word].append(str(idx + 1))
     return inverted_idx
 
@@ -170,9 +174,11 @@ def feature_engineering(lang, processed_doc):
     for idx in all_mappings:
         row_ngrams.write('|'.join(all_mappings[idx]) + '\n')
 
-    # get mask
+    print("binary mask ...")
+    mask_file = open(mask_file_path.format(lang), 'w', encoding="utf8")
     data_rows_binary = get_binary_representation(features, all_mappings)
-    return data_rows_binary
+    for row in data_rows_binary:
+        mask_file.write(' '.join(row) + '\n')
 
 
 def all(lang):

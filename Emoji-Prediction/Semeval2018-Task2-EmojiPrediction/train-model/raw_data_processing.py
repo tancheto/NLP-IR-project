@@ -92,8 +92,8 @@ def raw_data_processing(lang):
                 print(str(total))
 
             # TO REMOVE
-            if total == 11111:
-                break
+            # if total == 11111:
+            #     break
 
     # close files
     test.close()
