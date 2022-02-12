@@ -163,6 +163,8 @@ def feature_engineering(lang, processed_doc):
     # get mask
     data_rows_binary = get_binary_representation(features, all_mappings)
 
+    return data_rows_binary
+
     # DO NOT PRINT
     # print(data_rows_binary)
 
