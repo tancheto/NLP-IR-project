@@ -74,17 +74,17 @@ def load_data_and_labels(lang, path, n):
 
 def load_data_and_write_masks(lang):
     print("train data loading ...")
-    train_data = load_data(lang, train_file_path)
+    train_data = load_data(lang, train_text_file_path)
 
     print("trial data loading ...")
-    trial_data = load_data(lang, trial_file_path)
+    trial_data = load_data(lang, trial_text_file_path)
 
     print("test data loading ...")
-    test_data = load_data(lang, test_file_path)
+    test_data = load_data(lang, test_text_file_path)
 
-    features_train, all_mappings_train = get_features(train_data, [1])
-    features_trial, all_mappings_trial = get_features(trial_data, [1])
-    features_test, all_mappings_test = get_features(test_data, [1])
+    features_train, all_mappings_train = get_features(train_data, [1,2,3])
+    features_trial, all_mappings_trial = get_features(trial_data, [1,2,3])
+    features_test, all_mappings_test = get_features(test_data, [1,2,3])
 
     # dictionary, BoW = get_dictionary(train_data, 0)
     # tfidf = tf_idf(BoW)
@@ -102,7 +102,7 @@ def load_data_and_write_masks(lang):
 def classification(lang):
     load_data_and_write_masks(lang)
 
-    number = 100
+    number = 500000
 
     train = read_mask_from_file(mask_file_path.format(lang, "train"))[:number]
     trial = read_mask_from_file(mask_file_path.format(lang, "trial"))[:number]
@@ -112,8 +112,8 @@ def classification(lang):
     trial_labels = load_labels(lang, trial_labels_file_path)[:number]
     test_labels = load_labels(lang, test_labels_file_path)[:number]
 
-    # classifier = RandomForestClassifier()
-    classifier = svm.SVC()
+    classifier = RandomForestClassifier()
+    # classifier = svm.SVC()
     print("learning ...")
     classifier.fit(train, train_labels)
     print("evaluating ...")

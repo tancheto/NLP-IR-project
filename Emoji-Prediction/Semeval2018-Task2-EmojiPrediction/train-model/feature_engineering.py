@@ -189,7 +189,7 @@ def write_mask_in_file(mask, path):
 def read_mask_from_file(path):
     mask = []
     with open(path, 'r', encoding="utf8") as mask_file:
-        for row in mask:
+        for row in mask_file:
             mask.append(re.sub('\n', '', row).split(' '))
     return mask
 
