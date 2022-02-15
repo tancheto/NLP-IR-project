@@ -5,6 +5,7 @@
 
 import re
 import time
+import config
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import precision_score, recall_score, f1_score
@@ -26,30 +27,46 @@ test_labels_file_path = '../data/test/{}_test.labels'
 test_text_file_path = '../data/test/{}_test.text'
 test_file_path = '../data/test/{}_test'
 
+# masks paths
+mask_file_path = '../data/x-train/processed/masks/{}_{}_mask.txt'
+
 # predictions path
 predictions_file_path = '../data/x-train/predictions/{}_predictions_{}.labels'
 
-mask_file_path = '../data/x-train/masks/{}_{}_mask.txt'
+# important variables
+loaded = config.classifier_load
+ngrams_types = config.ngrams_types
+most_important_ngrams = config.most_important_ngrams
 
 
 def load_labels(lang, path):
     with open(path.format(lang), 'r', encoding="utf8") as labels:
         lbls = []
+        rows = 0
         for line in labels:
             lbls.append(re.sub('\n', '', line))
+
+            rows += 1
+            if rows == loaded:
+                break
     return lbls
 
 
 def load_data(lang, path):
     with open(path.format(lang), 'r', encoding="utf8") as data:
         processed_data = []
+        rows = 0
         for line in data:
             text, keywd = preprocessing(lang, line)
             processed_data.append(text + keywd)
+
+            rows += 1
+            if rows == loaded:
+                break
     return processed_data
 
 
-def load_data_and_labels(lang, path, n):
+def load_data_and_labels(lang, path):
     text = open((path + ".text").format(lang), 'r', encoding="utf8")
     labels = open((path + ".labels").format(lang), 'r', encoding="utf8")
 
@@ -63,7 +80,7 @@ def load_data_and_labels(lang, path, n):
         lbls.append(re.sub('\n', '', lbl))
 
         rows += 1
-        if rows == n:
+        if rows == loaded:
             break
 
     text.close()
@@ -82,35 +99,49 @@ def load_data_and_write_masks(lang):
     print("test data loading ...")
     test_data = load_data(lang, test_text_file_path)
 
-    features_train, all_mappings_train = get_features(train_data, [1,2,3])
-    features_trial, all_mappings_trial = get_features(trial_data, [1,2,3])
-    features_test, all_mappings_test = get_features(test_data, [1,2,3])
+    # features_train, all_mappings_train = get_features(
+    #     train_data, ngrams_types, most_important_ngrams)
+    # features_trial, all_mappings_trial = get_features(
+    #     trial_data, ngrams_types, most_important_ngrams)
+    # features_test, all_mappings_test = get_features(
+    #     test_data, ngrams_types, most_important_ngrams)
 
-    # dictionary, BoW = get_dictionary(train_data, 0)
-    # tfidf = tf_idf(BoW)
+    dictionary_train, BoW_train = get_dictionary(train_data, 0)
+    tfidf_train = tf_idf(BoW_train)
 
-    train = get_binary_representation(features_train, all_mappings_train)
+    dictionary_trial, BoW_trial = get_dictionary(trial_data, 0)
+    tfidf_trial = tf_idf(BoW_trial)
+
+    dictionary_test, BoW_test = get_dictionary(test_data, 0)
+    tfidf_test = tf_idf(BoW_test)
+
+    print("creating train mask ...")
+    # train = get_binary_representation(features_train, all_mappings_train)
+    train = get_mask(dictionary_train, tfidf_train)
     write_mask_in_file(train, mask_file_path.format(lang, "train"))
 
-    trial = get_binary_representation(features_train, all_mappings_trial)
+    print("creating trial mask ...")
+    # trial = get_binary_representation(features_train, all_mappings_trial)
+    trial = get_mask(dictionary_train, tfidf_trial)
     write_mask_in_file(trial, mask_file_path.format(lang, "trial"))
 
-    test = get_binary_representation(features_train, all_mappings_test)
+    print("creating test mask ...")
+    # test = get_binary_representation(features_train, all_mappings_test)
+    test = get_mask(dictionary_train, tfidf_test)
     write_mask_in_file(test, mask_file_path.format(lang, "test"))
 
 
 def classification(lang):
-    load_data_and_write_masks(lang)
+    if config.has_to_load:
+        load_data_and_write_masks(lang)
 
-    number = 500000
+    train = read_mask_from_file(mask_file_path.format(lang, "train"))[:loaded]
+    trial = read_mask_from_file(mask_file_path.format(lang, "trial"))[:loaded]
+    test = read_mask_from_file(mask_file_path.format(lang, "test"))[:loaded]
 
-    train = read_mask_from_file(mask_file_path.format(lang, "train"))[:number]
-    trial = read_mask_from_file(mask_file_path.format(lang, "trial"))[:number]
-    test = read_mask_from_file(mask_file_path.format(lang, "test"))[:number]
-
-    train_labels = load_labels(lang, train_labels_file_path)[:number]
-    trial_labels = load_labels(lang, trial_labels_file_path)[:number]
-    test_labels = load_labels(lang, test_labels_file_path)[:number]
+    train_labels = load_labels(lang, train_labels_file_path)[:loaded]
+    trial_labels = load_labels(lang, trial_labels_file_path)[:loaded]
+    test_labels = load_labels(lang, test_labels_file_path)[:loaded]
 
     classifier = RandomForestClassifier()
     # classifier = svm.SVC()

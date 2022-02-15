@@ -6,6 +6,7 @@ Return one file with list of pairs - tweet id and origin tweet, that are not in 
 
 import re
 import json
+import config
 import libs.emoji.emojilib as emojilib
 
 # paths
@@ -16,6 +17,9 @@ origin_file_path = '../data/x-train/raw/{}_train.origin'
 
 texts_file_path = '../data/x-train/train/{}_train.text'
 labels_file_path = '../data/x-train/train/{}_train.labels'
+
+# important variables
+data_limit = config.data_limit
 
 
 def clean_text(text):
@@ -91,9 +95,8 @@ def raw_data_processing(lang):
             if total % 10000 == 0 and total > 0:
                 print(str(total))
 
-            # TO REMOVE
-            # if total == 11111:
-            #     break
+            if total == data_limit:
+                break
 
     # close files
     test.close()

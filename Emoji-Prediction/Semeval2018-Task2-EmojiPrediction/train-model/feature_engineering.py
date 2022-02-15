@@ -4,6 +4,7 @@
 '''
 
 import re
+import config
 from gensim.models import TfidfModel
 from gensim.corpora import Dictionary
 
@@ -21,7 +22,9 @@ inverted_index_file_path = '../data/x-train/processed/{}_inverted_index.txt'
 tfidf_file_path = '../data/x-train/processed/{}_tfidf.txt'
 
 # important variables
-most_important_ngrams = 1000
+most_important_ngrams = config.most_important_ngrams
+min_frequency = config.min_frequency
+ngrams_types = config.ngrams_types
 
 
 def get_preprocessed_data(lang):
@@ -41,10 +44,10 @@ def get_dictionary(processed_doc, keep_n):
     dictionary = {}
     if keep_n == 0:
         dictionary = Dictionary(processed_doc)
-        dictionary.filter_extremes(no_below=3, keep_n=None)
+        dictionary.filter_extremes(no_below=min_frequency, keep_n=None)
     else:
         dictionary = Dictionary(processed_doc, keep_n)
-        dictionary.filter_extremes(no_below=3, keep_n=keep_n)
+        dictionary.filter_extremes(no_below=min_frequency, keep_n=keep_n)
 
     # document in Bag of Words(BoW) preview (using dictionary)
     BoW_doc = [dictionary.doc2bow(row, False) for row in processed_doc]
@@ -68,14 +71,17 @@ def get_ngrams(n, sentences):
     return ngram_frequencies, idx_ngrams_mapping
 
 
-def get_most_frequent_ngrams(ngram_frequencies, keep_n):
+def get_most_frequent_ngrams(ngram_frequencies, keep_n=None):
     # ngram sort and culling based on the frequencies
-    s_ngrams = sorted(ngram_frequencies.items(),
-                      key=lambda item: item[1], reverse=True)
-    return list(map(lambda x: x[0], s_ngrams))[0:keep_n]
+    if keep_n:
+        s_ngrams = sorted(ngram_frequencies.items(),
+                          key=lambda item: item[1], reverse=True)
+        return list(ngram_frequencies.keys())[0:keep_n]
+    else:
+        return [key for (key, value) in ngram_frequencies.items() if value >= min_frequency]
 
 
-def get_features(data, ns_in_ngrams):
+def get_features(data, ns_in_ngrams, features_numbers=None):
     # get most frequent ngrams (for different ns)
     # get for every data row all ngrams (for thise ns)
     features = []
@@ -86,9 +92,9 @@ def get_features(data, ns_in_ngrams):
         all_mappings[idx] = []
 
     # find ngrams for different ns
-    for n in ns_in_ngrams:
+    for i, n in enumerate(ns_in_ngrams):
         ngrams, idx_ngrams_mapping = get_ngrams(n, data)
-        curr_features = get_most_frequent_ngrams(ngrams, most_important_ngrams)
+        curr_features = get_most_frequent_ngrams(ngrams, features_numbers[i])
         features += curr_features
         for idx in idx_ngrams_mapping:
             all_mappings[idx] += idx_ngrams_mapping[idx]
@@ -111,6 +117,16 @@ def tf_idf(bag_of_words):
     for row in tfidf[bag_of_words]:
         tfidf_model.append(row)
     return tfidf_model
+
+
+def get_mask(dictionary, tfidf_model):
+    mask = []
+    for row in tfidf_model:
+        words = dict(row)
+        curr_representation = [
+            words[idx] if idx in words.keys() else 0 for idx, word in dictionary.items()]
+        mask.append(curr_representation)
+    return mask
 
 
 def inverted_index(dictionary, processed_doc):
@@ -162,9 +178,10 @@ def Dict_BoW_IIDX(lang, processed_doc):
     tfidf.close()
 
 
-def feature_engineering(lang, processed_doc):
+def feature_engineering(lang, processed_doc, ns_in_ngrams, features_numbers=None):
     # find ngrams of one, two and three words
-    features, all_mappings = get_features(processed_doc, [1, 2, 3])
+    features, all_mappings = get_features(
+        processed_doc, ns_in_ngrams, features_numbers)
 
     print("features ...")
     feats = open(features_file_path.format(lang), 'w', encoding="utf8")
@@ -194,11 +211,11 @@ def read_mask_from_file(path):
     return mask
 
 
-def all(lang):
+def write_all_processed_data(lang):
     # train data
     data_rows = get_preprocessed_data(lang)
 
     Dict_BoW_IIDX(lang, data_rows)
-    feature_engineering(lang, data_rows)
+    feature_engineering(lang, data_rows, ngrams_types, most_important_ngrams)
 
     print("Step 3: 💯%")
