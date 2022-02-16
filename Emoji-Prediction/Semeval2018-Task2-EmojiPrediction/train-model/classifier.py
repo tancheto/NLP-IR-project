@@ -12,6 +12,8 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 from data_preprocessing import preprocessing
 from feature_engineering import *
 
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+
 # train paths
 train_labels_file_path = '../data/x-train/train/{}_train.labels'
 train_text_file_path = '../data/x-train/train/{}_train.text'
@@ -58,7 +60,7 @@ def load_data(lang, path):
         rows = 0
         for line in data:
             text, keywd = preprocessing(lang, line)
-            processed_data.append(text + keywd)
+            processed_data.append(' '.join(text + keywd))
 
             rows += 1
             if rows == loaded:
@@ -89,7 +91,7 @@ def load_data_and_labels(lang, path):
     return processed_data, lbls
 
 
-def load_data_and_write_masks(lang):
+def load_data_and_write_masks_1(lang):
     print("train data loading ...")
     train_data = load_data(lang, train_text_file_path)
 
@@ -99,12 +101,35 @@ def load_data_and_write_masks(lang):
     print("test data loading ...")
     test_data = load_data(lang, test_text_file_path)
 
-    # features_train, all_mappings_train = get_features(
-    #     train_data, ngrams_types, most_important_ngrams)
-    # features_trial, all_mappings_trial = get_features(
-    #     trial_data, ngrams_types, most_important_ngrams)
-    # features_test, all_mappings_test = get_features(
-    #     test_data, ngrams_types, most_important_ngrams)
+    features_train, all_mappings_train = get_features(
+        train_data, ngrams_types, most_important_ngrams)
+    features_trial, all_mappings_trial = get_features(
+        trial_data, ngrams_types, most_important_ngrams)
+    features_test, all_mappings_test = get_features(
+        test_data, ngrams_types, most_important_ngrams)
+
+    print("creating train mask ...")
+    train = get_binary_representation(features_train, all_mappings_train)
+    write_mask_in_file(train, mask_file_path.format(lang, "train"))
+
+    print("creating trial mask ...")
+    trial = get_binary_representation(features_train, all_mappings_trial)
+    write_mask_in_file(trial, mask_file_path.format(lang, "trial"))
+
+    print("creating test mask ...")
+    test = get_binary_representation(features_train, all_mappings_test)
+    write_mask_in_file(test, mask_file_path.format(lang, "test"))
+
+
+def load_data_and_write_masks_2(lang):
+    print("train data loading ...")
+    train_data = load_data(lang, train_text_file_path)
+
+    print("trial data loading ...")
+    trial_data = load_data(lang, trial_text_file_path)
+
+    print("test data loading ...")
+    test_data = load_data(lang, test_text_file_path)
 
     dictionary_train, BoW_train = get_dictionary(train_data, 0)
     tfidf_train = tf_idf(BoW_train)
@@ -116,24 +141,87 @@ def load_data_and_write_masks(lang):
     tfidf_test = tf_idf(BoW_test)
 
     print("creating train mask ...")
-    # train = get_binary_representation(features_train, all_mappings_train)
     train = get_mask(dictionary_train, tfidf_train)
     write_mask_in_file(train, mask_file_path.format(lang, "train"))
 
     print("creating trial mask ...")
-    # trial = get_binary_representation(features_train, all_mappings_trial)
     trial = get_mask(dictionary_train, tfidf_trial)
     write_mask_in_file(trial, mask_file_path.format(lang, "trial"))
 
     print("creating test mask ...")
-    # test = get_binary_representation(features_train, all_mappings_test)
     test = get_mask(dictionary_train, tfidf_test)
+    write_mask_in_file(test, mask_file_path.format(lang, "test"))
+
+
+def load_data_and_write_masks_3(lang):
+    print("train data loading ...")
+    train_data = load_data(lang, train_text_file_path)
+
+    print("trial data loading ...")
+    trial_data = load_data(lang, trial_text_file_path)
+
+    print("test data loading ...")
+    test_data = load_data(lang, test_text_file_path)
+
+    features_train, all_mappings_train = get_features(
+        train_data, ngrams_types, most_important_ngrams)
+    features_trial, all_mappings_trial = get_features(
+        trial_data, ngrams_types, most_important_ngrams)
+    features_test, all_mappings_test = get_features(
+        test_data, ngrams_types, most_important_ngrams)
+
+    dictionary_train, BoW_train = get_dictionary(train_data, 0)
+    tfidf_train = tf_idf(BoW_train)
+
+    dictionary_trial, BoW_trial = get_dictionary(trial_data, 0)
+    tfidf_trial = tf_idf(BoW_trial)
+
+    dictionary_test, BoW_test = get_dictionary(test_data, 0)
+    tfidf_test = tf_idf(BoW_test)
+
+    print("creating train mask ...")
+    train = get_mask(dictionary_train, tfidf_train)
+    write_mask_in_file(train, mask_file_path.format(lang, "train"))
+
+    print("creating trial mask ...")
+    trial = get_binary_representation(dictionary_train, all_mappings_trial)
+    write_mask_in_file(trial, mask_file_path.format(lang, "trial"))
+
+    print("creating test mask ...")
+    test = get_binary_representation(dictionary_train, all_mappings_test)
+    write_mask_in_file(test, mask_file_path.format(lang, "test"))
+
+
+def load_data_and_write_masks_4(lang):
+    print("train data loading ...")
+    train_data = load_data(lang, train_text_file_path)
+
+    print("trial data loading ...")
+    trial_data = load_data(lang, trial_text_file_path)
+
+    print("test data loading ...")
+    test_data = load_data(lang, test_text_file_path)
+
+    tfidfvectorizer = TfidfVectorizer(analyzer='word', stop_words='english')
+
+    print("creating train mask ...")
+    tfidfvectorizer.fit(train_data)
+    train = tfidfvectorizer.transform(train_data).toarray()
+    write_mask_in_file(train, mask_file_path.format(lang, "train"))
+
+    print("creating trial mask ...")
+    trial = tfidfvectorizer.transform(trial_data).toarray()
+    write_mask_in_file(trial, mask_file_path.format(lang, "trial"))
+
+    print("creating test mask ...")
+    test = tfidfvectorizer.transform(test_data).toarray()
     write_mask_in_file(test, mask_file_path.format(lang, "test"))
 
 
 def classification(lang):
     if config.has_to_load:
-        load_data_and_write_masks(lang)
+        # chose from 4 different variants ...
+        load_data_and_write_masks_4(lang)
 
     train = read_mask_from_file(mask_file_path.format(lang, "train"))[:loaded]
     trial = read_mask_from_file(mask_file_path.format(lang, "trial"))[:loaded]
