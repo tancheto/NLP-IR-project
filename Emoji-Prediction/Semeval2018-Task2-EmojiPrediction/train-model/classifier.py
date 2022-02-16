@@ -202,7 +202,7 @@ def load_data_and_write_masks_4(lang):
     print("test data loading ...")
     test_data = load_data(lang, test_text_file_path)
 
-    tfidfvectorizer = TfidfVectorizer(analyzer='word', stop_words='english')
+    tfidfvectorizer = TfidfVectorizer(analyzer='word', stop_words='english', max_features=3000)
 
     print("creating train mask ...")
     tfidfvectorizer.fit(train_data)
