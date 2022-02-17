@@ -1,5 +1,5 @@
 # starting training data
-data_limit = 11111
+data_limit = 500000
 
 # Add or Skip mentions
 add_mentions = False
@@ -11,11 +11,11 @@ ngram_range = (1, 3)
 # ngram (or word in dictionary) minimum frequency
 min_frequency = 2
 # number of featires
-max_features = 1500
+max_features = 1000
 # ngrams limit for each type (their sum must be <= max_features)
-most_important_ngrams = [1500]  # [1000, 1000, 1000]
+most_important_ngrams = [1000]  # [1000, 1000, 1000]
 
 # generate new mask for classifier
 has_to_load = True
 # amount of data that the classifier uses
-classifier_load = 11111
+classifier_load = 100000
