@@ -7,13 +7,13 @@ add_mentions = False
 # types of ngrams
 ngrams_types = [1]  # [1, 2, 3]
 # range tuple (x, y) is equvalent to ngrams_types of [x, x+1, ... , y-1, y]
-ngram_range = (1, 1)
+ngram_range = (1, 3)
 # ngram (or word in dictionary) minimum frequency
 min_frequency = 2
 # number of featires
-max_features = 1000
+max_features = 1500
 # ngrams limit for each type (their sum must be <= max_features)
-most_important_ngrams = [1000]  # [1000, 1000, 1000]
+most_important_ngrams = [1500]  # [1000, 1000, 1000]
 
 # generate new mask for classifier
 has_to_load = True

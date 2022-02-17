@@ -40,7 +40,7 @@ end = '''
 \end{document}
 '''
 
-csfont = {'fontname': 'Times New Roman', 'fontsize': '17'}
+csfont = {'fontsize': '17'}
 img_path = 'libs/visualisation/img/'
 
 

@@ -25,8 +25,12 @@ trial_text_file_path = '../data/trial/{}_trial.text'
 # test paths
 test_labels_file_path = '../data/test/{}_test.labels'
 test_text_file_path = '../data/test/{}_test.text'
+
 # masks paths
 mask_file_path = '../data/x-train/processed/masks/{}_{}_mask.txt'
+
+# idf features
+idf_features_file_path = '../data/x-train/processed/{}_idf_features.txt'
 
 # predictions path
 predictions_file_path = '../data/x-train/predictions/{}_predictions_{}.labels'
@@ -76,10 +80,15 @@ def load_data_and_write_masks(lang):
     print("test data loading ...")
     test_data = load_data(lang, test_text_file_path)
 
+    print("calculating idf ...")
     tfidfvectorizer = TfidfVectorizer(
         analyzer='word', stop_words='english', ngram_range=ngram_range, max_features=max_features, min_df=min_frequency)
     tfidfvectorizer.fit(train_data)
-    tfidfvectorizer.get_feature_names_out()
+
+    idf_features = tfidfvectorizer.get_feature_names_out()
+    with open(idf_features_file_path.format(lang), 'w', encoding="utf8") as idf_features_file:
+        for feature in idf_features:
+            idf_features_file.write(feature + '\n')
 
     print("creating train mask ...")
     train = tfidfvectorizer.transform(train_data).toarray()
@@ -124,5 +133,7 @@ def classification(lang):
     gold_file_path = test_labels_file_path.format(lang)
     visualisation(lang, gold_file_path, predicted_file)
 
-    f1 = f1_score(test_labels, predicted, average="micro")
-    print(f"Step 4: 💯% -> F1: {f1}")
+    f1_micro = f1_score(test_labels, predicted, average="micro")
+    f1_macro = f1_score(test_labels, predicted, average="macro")
+    print(
+        f"Step 4: 💯% -> F1-macro: {round(f1_macro, 3)} & F1-micro: {round(f1_micro, 3)}")
