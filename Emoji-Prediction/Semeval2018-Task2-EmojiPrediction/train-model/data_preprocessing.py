@@ -4,6 +4,7 @@
 '''
 
 import string
+import config
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer, SnowballStemmer
@@ -19,6 +20,7 @@ keywords_file_path = '../data/x-train/{}_train.keywords'
 train_file_path = '../data/x-train/{}_train.txt'
 
 # important variables
+add_mentions = config.add_mentions
 unnecess_punctuation = string.punctuation + '…' + '・' + '•'
 stop_words = {'us': set(stopwords.words('english')).union(STOPWORDS),
               'es': set(stopwords.words('spanish'))}
@@ -57,7 +59,7 @@ def clean_text_vol2(text, mentions=False):
 
 def preprocessing(lang, text):
     # one tweet preprocessing
-    clean_text, keywd = clean_text_vol2(text)
+    clean_text, keywd = clean_text_vol2(text, add_mentions)
     clean_text = sentence_tokenizer(lang, clean_text)
     keywd = sentence_tokenizer(lang, keywd)
     return clean_text, keywd

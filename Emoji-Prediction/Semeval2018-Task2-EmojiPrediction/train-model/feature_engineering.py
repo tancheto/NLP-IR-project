@@ -22,6 +22,7 @@ inverted_index_file_path = '../data/x-train/processed/{}_inverted_index.txt'
 tfidf_file_path = '../data/x-train/processed/{}_tfidf.txt'
 
 # important variables
+max_features = config.max_features
 most_important_ngrams = config.most_important_ngrams
 min_frequency = config.min_frequency
 ngrams_types = config.ngrams_types
@@ -101,16 +102,6 @@ def get_features(data, ns_in_ngrams, features_numbers=None):
     return features, all_mappings
 
 
-def get_binary_representation(features, mappings):
-    # create binary mask of occurrences
-    binary_representation = []
-    for key in mappings:
-        curr_representation = [
-            1 if feature in mappings[key] else 0 for feature in features]
-        binary_representation.append(curr_representation)
-    return binary_representation
-
-
 def tf_idf(bag_of_words):
     tfidf_model = []
     tfidf = TfidfModel(bag_of_words)
@@ -119,22 +110,12 @@ def tf_idf(bag_of_words):
     return tfidf_model
 
 
-def get_mask(dictionary, tfidf_model):
-    mask = []
-    for row in tfidf_model:
-        words = dict(row)
-        curr_representation = [
-            words[idx] if idx in words.keys() else 0 for idx, word in dictionary.items()]
-        mask.append(curr_representation)
-    return mask
-
-
 def inverted_index(dictionary, processed_doc):
     # create for every word in dictionary list of row indexes of its encounters
 
     # initialising with empty lists
     inverted_idx = {}
-    for key, value in dictionary.iteritems():
+    for key, value in dictionary.items():
         inverted_idx[value] = []
 
     dictionary_set = set(dictionary.values())
@@ -149,7 +130,7 @@ def inverted_index(dictionary, processed_doc):
 
 def Dict_BoW_IIDX(lang, processed_doc):
     # create dictionary, bag of words and inverted index from processed document
-    dictionary, BoW = get_dictionary(processed_doc, 0)
+    dictionary, BoW = get_dictionary(processed_doc, max_features)
 
     print("dictionary ...")
     dict = open(dictionary_file_path.format(lang), 'w', encoding="utf8")
@@ -195,20 +176,6 @@ def feature_engineering(lang, processed_doc, ns_in_ngrams, features_numbers=None
 
     feats.close()
     row_ngrams.close()
-
-
-def write_mask_in_file(mask, path):
-    with open(path, 'w', encoding="utf8") as mask_file:
-        for row in mask:
-            mask_file.write(' '.join([str(item) for item in row]) + '\n')
-
-
-def read_mask_from_file(path):
-    mask = []
-    with open(path, 'r', encoding="utf8") as mask_file:
-        for row in mask_file:
-            mask.append(re.sub('\n', '', row).split(' '))
-    return mask
 
 
 def write_all_processed_data(lang):
