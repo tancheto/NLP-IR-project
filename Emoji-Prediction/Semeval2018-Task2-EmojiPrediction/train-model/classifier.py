@@ -9,6 +9,8 @@ import config
 from sklearn.metrics import f1_score
 from data_preprocessing import preprocessing
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from mask_creator import *
 from visualisation import visualisation
@@ -115,7 +117,9 @@ def classification(lang):
     # trial_labels = load_labels(lang, trial_labels_file_path)[:loaded]
     test_labels = load_labels(lang, test_labels_file_path)[:loaded]
 
-    classifier = RandomForestClassifier()
+    # classifier = RandomForestClassifier()
+    # classifier = LogisticRegression()
+    classifier = KNeighborsClassifier()
     print("learning ...")
     classifier.fit(train, train_labels)
     # print("evaluating ...")
